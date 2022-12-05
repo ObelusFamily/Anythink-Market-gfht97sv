@@ -39,9 +39,11 @@ router.param("comment", function (req, res, next, id) {
 router.get("/", auth.optional, function (req, res, next) {
   // request contains a query, extract that.
   var query = {};
+  var titleQuery = {};
   if (req.query.title) {
-    query.title = req.query.title;
+    titleQuery = { title: req.query.title };
   }
+
   var limit = 100;
   var offset = 0;
 
@@ -77,6 +79,7 @@ router.get("/", auth.optional, function (req, res, next) {
 
       return Promise.all([
         Item.find(query)
+          .find(titleQuery)
           .limit(Number(limit))
           .skip(Number(offset))
           .sort({ createdAt: "desc" })
