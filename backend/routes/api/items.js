@@ -39,10 +39,6 @@ router.param("comment", function (req, res, next, id) {
 router.get("/", auth.optional, function (req, res, next) {
   // request contains a query, extract that.
   var query = {};
-  var titleQuery = {};
-  if (req.query.title) {
-    titleQuery = { title: req.query.title };
-  }
 
   var limit = 100;
   var offset = 0;
@@ -57,6 +53,11 @@ router.get("/", auth.optional, function (req, res, next) {
 
   if (typeof req.query.tag !== "undefined") {
     query.tagList = { $in: [req.query.tag] };
+  }
+
+  if (typeof req.query.title !== "undefined") {
+    // Match the title with the query partial matches too.
+    query.title = { $regex: req.query.title, $options: "i" };
   }
 
   Promise.all([
@@ -79,7 +80,6 @@ router.get("/", auth.optional, function (req, res, next) {
 
       return Promise.all([
         Item.find(query)
-          .find(titleQuery)
           .limit(Number(limit))
           .skip(Number(offset))
           .sort({ createdAt: "desc" })
